@@ -24,6 +24,28 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
     const [shuffle, setShuffle] = useState(false);
     const audioRef = useRef(null);
 
+    const shuffledMusics = useMemo(() => {
+        if (musics?.length === 0) {
+            return [];
+        }
+        const shuffledArr = shuffleArray(musics);
+        if (!currentTrack) {
+            return shuffledArr;
+        }
+        const removedPlayingTrack = shuffledArr.filter(m => m.id !== currentTrack?.id);
+        return [currentTrack, ...removedPlayingTrack]
+    }, [musics, currentTrack]);
+
+    const nextSongDisabled = useMemo(() => {
+        const muziks = shuffle ? shuffledMusics : musics;
+        return muziks?.[muziks?.length - 1]?.id === currentTrack?.id || !currentTrack
+    }, [currentTrack, musics, shuffledMusics, shuffle]);
+
+    const lastSongDisabled = useMemo(() => {
+        const muziks = shuffle ? shuffledMusics : musics;
+        return muziks?.[0]?.id === currentTrack?.id || !currentTrack
+    }, [currentTrack, musics, shuffledMusics, shuffle]);
+
     const handlePlayPause = (music) => {
         if (currentTrack?.id === music.id) {
             if (playing) {
@@ -55,7 +77,16 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
             audioRef.current.onended = () => {
                 setPlaying(false);
                 setCurrentTrack(null);
+                setDuration(0);
+                setCurrentTime(0);
                 URL.revokeObjectURL(audioRef.current.src);
+                //Play next
+                const muziks = shuffle ? shuffledMusics : musics;
+                const currIndex = muziks?.findIndex(m => m.id === music.id);
+                const nextSong = muziks?.[currIndex + 1];
+                if (nextSong) {
+                    handlePlayPause(nextSong);
+                }
             };
         }
     };
@@ -83,28 +114,6 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
         }
         dispatch(setVolume(newVolume));
     };
-
-    const shuffledMusics = useMemo(() => {
-        if (musics?.length === 0) {
-            return [];
-        }
-        const shuffledArr = shuffleArray(musics);
-        if (!currentTrack) {
-            return shuffledArr;
-        }
-        const removedPlayingTrack = shuffledArr.filter(m => m.id !== currentTrack?.id);
-        return [currentTrack, ...removedPlayingTrack]
-    }, [musics, currentTrack])
-
-    const nextSongDisabled = useMemo(() => {
-        const muziks = shuffle ? shuffledMusics : musics;
-        return muziks?.[muziks?.length - 1]?.id === currentTrack?.id || !currentTrack
-    }, [currentTrack, musics, shuffledMusics, shuffle]);
-
-    const lastSongDisabled = useMemo(() => {
-        const muziks = shuffle ? shuffledMusics : musics;
-        return muziks?.[0]?.id === currentTrack?.id || !currentTrack
-    }, [currentTrack, musics, shuffledMusics, shuffle]);
 
     const onNextSong = () => {
         const muziks = shuffle ? shuffledMusics : musics;
@@ -142,7 +151,7 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
         const formattedMinutes = String(minutes).padStart(2, '0');
         const formattedSeconds = String(seconds).padStart(2, '0');
         return `${formattedMinutes}:${formattedSeconds}`;
-    }, [currentTime])
+    }, [currentTime]);
 
     useEffect(() => {
         return () => {

@@ -1,5 +1,7 @@
 {
   "name": "bad-music-player",
+  "description": "A Bad Music Player",
+  "author": "lostsoul12345",
   "version": "0.1.0",
   "main": "public/electron.js",
   "homepage": ".",
@@ -29,8 +31,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"npm:start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-prod": "npm run build && cross-env NODE_ENV=production electron ."
+    "electron": "npm run build && electron .",
+    "electron-pack": "react-scripts build && electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -52,7 +54,6 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
     "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
     "wait-on": "^7.2.0"
@@ -67,7 +68,7 @@
       "buildResources": "public"
     },
     "win": {
-      "icon": "public/android-chrome-512x512.png"
+      "icon": "public/android-chrome-512x512.ico"
     },
     "mac": {
       "icon": "public/android-chrome-512x512.png"

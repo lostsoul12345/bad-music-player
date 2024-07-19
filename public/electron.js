@@ -2,10 +2,6 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 function createWindow() {
-    const isDev = process.env.NODE_ENV === 'development';
-
-    console.log('isDev:', isDev);
-
     const mainWindow = new BrowserWindow({
         width: 1024,
         height: 768,
@@ -13,19 +9,14 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
         },
+        icon: path.join(__dirname, 'android-chrome-512x512.ico')
     });
 
-    const startUrl = isDev
-        ? 'http://localhost:3000'
-        : `file://${path.join(__dirname, '../build/index.html')}`;
+    const startUrl = `file://${path.join(__dirname, '../build/index.html')}`;
 
     console.log('startUrl:', startUrl);
 
-    mainWindow.loadURL(startUrl).catch(err => console.error('Failed to load URL:', err));  // Catch loading errors
-
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
+    mainWindow.loadURL(startUrl).catch(err => console.error('Failed to load URL:', err));
 }
 
 app.on('ready', createWindow);
