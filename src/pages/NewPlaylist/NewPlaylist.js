@@ -22,7 +22,7 @@ function NewPlaylist() {
     const { musics, loading: loadingGetMusics } = useGetMusics();
 
     const filteredMusics = useMemo(() => {
-        if (search === "") {
+        if (search.trim() === "") {
             return musics;
         }
         return musics?.filter(m => m.name.toLowerCase()?.includes(search.toLowerCase()));

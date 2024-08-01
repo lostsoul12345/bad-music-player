@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from "react";
 import useDeleteMusic from "../hooks/useDeleteMusic";
-import { IconButton, Paper, Slider } from "@mui/material";
+import { IconButton, Paper, Slider, TextField, Tooltip } from "@mui/material";
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StopIcon from '@mui/icons-material/Stop';
@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setVolume } from "../redux/state/volumeReducer";
 import shuffleArray from "../util/shuffleArray";
 import ShuffleIcon from '@mui/icons-material/Shuffle';
+import { RepeatOn, Search } from "@mui/icons-material";
 
 function MusicPlayer({ musics, getMusics, showDelete }) {
     const volumeReducer = useSelector(state => state.volumeReducer);
@@ -22,7 +23,16 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [shuffle, setShuffle] = useState(false);
+    const [repeatPlaylist, setRepeatPlaylist] = useState(false);
+    const [search, setSearch] = useState("");
     const audioRef = useRef(null);
+
+    const filteredMusics = useMemo(() => {
+        if (search.trim() === "") {
+            return musics;
+        }
+        return musics?.filter(m => m.name.toLowerCase()?.includes(search.toLowerCase()));
+    }, [shuffle, musics, search]);
 
     const shuffledMusics = useMemo(() => {
         if (musics?.length === 0) {
@@ -34,7 +44,7 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
         }
         const removedPlayingTrack = shuffledArr.filter(m => m.id !== currentTrack?.id);
         return [currentTrack, ...removedPlayingTrack]
-    }, [musics, currentTrack]);
+    }, [musics, shuffle]);
 
     const nextSongDisabled = useMemo(() => {
         const muziks = shuffle ? shuffledMusics : musics;
@@ -86,6 +96,8 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
                 const nextSong = muziks?.[currIndex + 1];
                 if (nextSong) {
                     handlePlayPause(nextSong);
+                } else if (repeatPlaylist) {
+                    handlePlayPause(muziks[0]);
                 }
             };
         }
@@ -196,19 +208,30 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
                         </div>
                     </div>
                     <div className="flex-row align-center gap-1">
-                        <IconButton
-                            onClick={() => setShuffle(prev => !prev)}
-                        >
-                            <ShuffleIcon
-                                color={shuffle ? "primary" : undefined}
-                            />
-                        </IconButton>
-                        <IconButton onClick={onLastSong} disabled={lastSongDisabled}>
-                            <FastRewindRounded sx={{ fontSize: "2rem" }} />
-                        </IconButton>
-                        <IconButton onClick={onNextSong} disabled={nextSongDisabled}>
-                            <FastForwardRounded sx={{ fontSize: "2rem" }} />
-                        </IconButton>
+                        <Tooltip arrow title="Repeat Playlist">
+                            <IconButton onClick={() => setRepeatPlaylist(prev => !prev)}>
+                                <RepeatOn color={repeatPlaylist ? "primary" : undefined} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip arrow title="Shuffle">
+                            <IconButton
+                                onClick={() => setShuffle(prev => !prev)}
+                            >
+                                <ShuffleIcon
+                                    color={shuffle ? "primary" : undefined}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip arrow title="Last Song">
+                            <IconButton onClick={onLastSong} disabled={lastSongDisabled}>
+                                <FastRewindRounded sx={{ fontSize: "2rem" }} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip arrow title="Next Song">
+                            <IconButton onClick={onNextSong} disabled={nextSongDisabled}>
+                                <FastForwardRounded sx={{ fontSize: "2rem" }} />
+                            </IconButton>
+                        </Tooltip>
                     </div>
                     <div className="flex-row align-center gap-1">
                         <VolumeDownRounded sx={{ fontSize: "1.5rem" }} />
@@ -222,7 +245,23 @@ function MusicPlayer({ musics, getMusics, showDelete }) {
                     </div>
                 </div>
             }
-            {musics?.map((m, i) => (
+            <div className="mb-1">
+                <TextField
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    label="Search.."
+                    className="outlined-textfield"
+                    size="small"
+                    InputProps={{ endAdornment: <Search /> }}
+                    autoComplete="off"
+                />
+            </div>
+            {filteredMusics?.length === 0 &&
+                <div className="container-width pt-1 pb-4 font-bold">
+                    No Musics Found
+                </div>
+            }
+            {filteredMusics?.map((m, i) => (
                 <Paper
                     elevation={3}
                     key={m.id}
