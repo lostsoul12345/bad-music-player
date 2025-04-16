@@ -20,7 +20,7 @@ To build the application for different operating systems, you can use the `elect
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/lostsoul12345/bad-music-player.git
+   git clone https://github.com/iCSharks/bad-music-player.git
    cd bad-music-player
    ```
 
